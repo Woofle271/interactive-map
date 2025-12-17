@@ -1,39 +1,37 @@
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  (function () {
-    const APP_URL = "/app.html";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Login required</h1>
+  <p>Click the button below to log in.</p>
 
-    function openLogin() {
-      if (window.netlifyIdentity) window.netlifyIdentity.open();
-    }
+  <div data-netlify-identity-button>Log in</div>
 
-    function clearStoredAuth() {
-      try {
-        for (const k of Object.keys(localStorage)) {
-          const s = k.toLowerCase();
-          if (s.includes("gotrue") || s.includes("netlify") || s.includes("identity")) {
-            localStorage.removeItem(k);
-          }
-        }
-      } catch (e) {}
-    }
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    (function () {
+      const APP_URL = "/app.html";
+      if (!window.netlifyIdentity) return;
 
-    // Open after a short delay no matter what
-    setTimeout(openLogin, 300);
-    setTimeout(openLogin, 1000);
+      // If already logged in, go straight to the app
+      window.netlifyIdentity.on("init", (user) => {
+        if (user) window.location.href = APP_URL;
+      });
 
-    if (!window.netlifyIdentity) return;
+      // After login, go to the app
+      window.netlifyIdentity.on("login", () => {
+        window.location.href = APP_URL;
+      });
 
-    window.netlifyIdentity.on("login", () => {
-      window.location.replace(APP_URL);
-    });
-
-    window.netlifyIdentity.on("init", (user) => {
-      if (user) window.netlifyIdentity.logout();
-      clearStoredAuth();
-      openLogin();
-    });
-
-    window.netlifyIdentity.init();
-  })();
-</script>
+      window.netlifyIdentity.init();
+    })();
+  </script>
+</body>
+</html>
