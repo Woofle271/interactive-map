@@ -4,9 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login required</title>
-  <style>
-    body { font-family: sans-serif; padding: 24px; }
-  </style>
 </head>
 <body>
   <h1>Login required</h1>
@@ -16,35 +13,37 @@
   <script>
     (function () {
       const APP_URL = "/app.html";
-
       if (!window.netlifyIdentity) return;
 
-      function hardLogout() {
-        // Ask widget to logout
-        try { window.netlifyIdentity.logout(); } catch (e) {}
-
-        // Also clear any persisted auth tokens (Netlify Identity / GoTrue)
+      function clearStoredAuth() {
         try {
-          const keys = Object.keys(localStorage);
-          for (const k of keys) {
-            const lk = k.toLowerCase();
-            if (lk.includes("gotrue") || lk.includes("netlify") || lk.includes("identity")) {
+          for (const k of Object.keys(localStorage)) {
+            const s = k.toLowerCase();
+            if (s.includes("gotrue") || s.includes("netlify") || s.includes("identity")) {
               localStorage.removeItem(k);
             }
           }
         } catch (e) {}
       }
 
-      // Only redirect after a NEW login event
       window.netlifyIdentity.on("login", () => {
         window.location.replace(APP_URL);
       });
 
-      // On init, force logout + open login
-      window.netlifyIdentity.on("init", () => {
-        hardLogout();
-        // Small delay so logout/token clearing finishes before opening
-        setTimeout(() => window.netlifyIdentity.open(), 200);
+      window.netlifyIdentity.on("logout", () => {
+        clearStoredAuth();
+        // Show login after logout is truly done
+        setTimeout(() => window.netlifyIdentity.open(), 50);
+      });
+
+      window.netlifyIdentity.on("init", (user) => {
+        if (user) {
+          // Force logout every time you land on /
+          window.netlifyIdentity.logout();
+        } else {
+          clearStoredAuth();
+          window.netlifyIdentity.open();
+        }
       });
 
       window.netlifyIdentity.init();
