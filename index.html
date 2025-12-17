@@ -1,53 +1,39 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login required</title>
-</head>
-<body>
-  <h1>Login required</h1>
-  <p>Opening login…</p>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  (function () {
+    const APP_URL = "/app.html";
 
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script>
-    (function () {
-      const APP_URL = "/app.html";
-      if (!window.netlifyIdentity) return;
+    function openLogin() {
+      if (window.netlifyIdentity) window.netlifyIdentity.open();
+    }
 
-      function clearStoredAuth() {
-        try {
-          for (const k of Object.keys(localStorage)) {
-            const s = k.toLowerCase();
-            if (s.includes("gotrue") || s.includes("netlify") || s.includes("identity")) {
-              localStorage.removeItem(k);
-            }
+    function clearStoredAuth() {
+      try {
+        for (const k of Object.keys(localStorage)) {
+          const s = k.toLowerCase();
+          if (s.includes("gotrue") || s.includes("netlify") || s.includes("identity")) {
+            localStorage.removeItem(k);
           }
-        } catch (e) {}
-      }
-
-      window.netlifyIdentity.on("login", () => {
-        window.location.replace(APP_URL);
-      });
-
-      window.netlifyIdentity.on("logout", () => {
-        clearStoredAuth();
-        // Show login after logout is truly done
-        setTimeout(() => window.netlifyIdentity.open(), 50);
-      });
-
-      window.netlifyIdentity.on("init", (user) => {
-        if (user) {
-          // Force logout every time you land on /
-          window.netlifyIdentity.logout();
-        } else {
-          clearStoredAuth();
-          window.netlifyIdentity.open();
         }
-      });
+      } catch (e) {}
+    }
 
-      window.netlifyIdentity.init();
-    })();
-  </script>
-</body>
-</html>
+    // Open after a short delay no matter what
+    setTimeout(openLogin, 300);
+    setTimeout(openLogin, 1000);
+
+    if (!window.netlifyIdentity) return;
+
+    window.netlifyIdentity.on("login", () => {
+      window.location.replace(APP_URL);
+    });
+
+    window.netlifyIdentity.on("init", (user) => {
+      if (user) window.netlifyIdentity.logout();
+      clearStoredAuth();
+      openLogin();
+    });
+
+    window.netlifyIdentity.init();
+  })();
+</script>
