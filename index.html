@@ -5,29 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login required</title>
   <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #111;
-      color: #eee;
-      text-align: center;
-      padding: 24px;
-    }
-    h1 { margin: 0 0 8px; }
-    p { margin: 0 0 16px; opacity: 0.9; }
-    .hint { font-size: 0.9rem; opacity: 0.75; }
+    body { font-family: sans-serif; padding: 24px; }
   </style>
 </head>
-
 <body>
   <h1>Login required</h1>
-  <p>Redirecting to login…</p>
-  <div class="hint">If you were previously logged in, you will be logged out first.</div>
+  <p>Opening login…</p>
 
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
@@ -36,24 +19,32 @@
 
       if (!window.netlifyIdentity) return;
 
-      // After a *fresh* login, go to the app.
+      function hardLogout() {
+        // Ask widget to logout
+        try { window.netlifyIdentity.logout(); } catch (e) {}
+
+        // Also clear any persisted auth tokens (Netlify Identity / GoTrue)
+        try {
+          const keys = Object.keys(localStorage);
+          for (const k of keys) {
+            const lk = k.toLowerCase();
+            if (lk.includes("gotrue") || lk.includes("netlify") || lk.includes("identity")) {
+              localStorage.removeItem(k);
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Only redirect after a NEW login event
       window.netlifyIdentity.on("login", () => {
         window.location.replace(APP_URL);
       });
 
-      // When logout completes, immediately show the login dialog.
-      window.netlifyIdentity.on("logout", () => {
-        window.netlifyIdentity.open();
-      });
-
-      window.netlifyIdentity.on("init", (user) => {
-        if (user) {
-          // Force logout, then the "logout" handler above will open the login.
-          window.netlifyIdentity.logout();
-        } else {
-          // Not logged in, show login immediately.
-          window.netlifyIdentity.open();
-        }
+      // On init, force logout + open login
+      window.netlifyIdentity.on("init", () => {
+        hardLogout();
+        // Small delay so logout/token clearing finishes before opening
+        setTimeout(() => window.netlifyIdentity.open(), 200);
       });
 
       window.netlifyIdentity.init();
