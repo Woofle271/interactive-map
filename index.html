@@ -15,45 +15,49 @@
       margin: 0;
       background: #111;
       color: #eee;
+      text-align: center;
+      padding: 24px;
     }
-    h1 { margin-bottom: 0.5em; }
-    p { margin-bottom: 1.5em; }
-    button {
-      font-size: 1rem;
-      padding: 0.6em 1.2em;
-      cursor: pointer;
-    }
+    h1 { margin: 0 0 8px; }
+    p { margin: 0 0 16px; opacity: 0.9; }
+    .hint { font-size: 0.9rem; opacity: 0.75; }
   </style>
 </head>
 
 <body>
   <h1>Login required</h1>
-  <p>Please log in to access the map.</p>
+  <p>Redirecting to login…</p>
+  <div class="hint">If you were previously logged in, you will be logged out first.</div>
 
-  <!-- Netlify Identity login button -->
-  <div data-netlify-identity-button>Log in</div>
-
-  <!-- Netlify Identity widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
   <script>
-    if (window.netlifyIdentity) {
+    (function () {
+      const APP_URL = "/app.html";
 
-      // On page load: ALWAYS log out any existing session
-      window.netlifyIdentity.on("init", user => {
+      if (!window.netlifyIdentity) return;
+
+      // After a *fresh* login, go to the app.
+      window.netlifyIdentity.on("login", () => {
+        window.location.replace(APP_URL);
+      });
+
+      // When logout completes, immediately show the login dialog.
+      window.netlifyIdentity.on("logout", () => {
+        window.netlifyIdentity.open();
+      });
+
+      window.netlifyIdentity.on("init", (user) => {
         if (user) {
+          // Force logout, then the "logout" handler above will open the login.
           window.netlifyIdentity.logout();
+        } else {
+          // Not logged in, show login immediately.
+          window.netlifyIdentity.open();
         }
       });
 
-      // After successful login, go to the app
-      window.netlifyIdentity.on("login", () => {
-        window.location.href = "/app.html";
-      });
-
-      // Ensure widget initializes
       window.netlifyIdentity.init();
-    }
+    })();
   </script>
 </body>
 </html>
