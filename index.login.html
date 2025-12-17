@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login required</title>
+</head>
+<body>
+  <h1>Login required</h1>
+  <p>Please log in to access the map.</p>
+
+  <div data-netlify-identity-button>Log in</div>
+
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    if (window.netlifyIdentity) {
+      // Already logged in → go straight to app
+      window.netlifyIdentity.on("init", user => {
+        if (user) {
+          window.location.href = "/app.html";
+        }
+      });
+
+      // After successful login → go to app
+      window.netlifyIdentity.on("login", () => {
+        window.location.href = "/app.html";
+      });
+    }
+  </script>
+</body>
+</html>
